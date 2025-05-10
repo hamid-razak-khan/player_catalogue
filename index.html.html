@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Auction - Interactive Player Catalogue</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: #f8fafc;
+            --foreground: #0f172a;
+            --card: #ffffff;
+            --card-foreground: #0f172a;
+            --primary: #0284c7;
+            --primary-foreground: #f8fafc;
+            --secondary: #059669;
+            --secondary-foreground: #f8fafc;
+            --muted: #f1f5f9;
+            --muted-foreground: #64748b;
+            --accent: #f1f5f9;
+            --accent-foreground: #0f172a;
+            --destructive: #ef4444;
+            --destructive-foreground: #f8fafc;
+            --border: #e2e8f0;
+            --input: #e2e8f0;
+            --ring: #0f172a;
+            --radius: 0.8rem;
+        }
+
+        .dark {
+            --background: #0f172a;
+            --foreground: #f8fafc;
+            --card: #1e293b;
+            --card-foreground: #f8fafc;
+            --primary: #0284c7;
+            --primary-foreground: #f8fafc;
+            --secondary: #059669;
+            --secondary-foreground: #f8fafc;
+            --muted: #1e293b;
+            --muted-foreground: #94a3b8;
+            --accent: #1e293b;
+            --accent-foreground: #f8fafc;
+            --destructive: #ef4444;
+            --destructive-foreground: #f8fafc;
+            --border: #334155;
+            --input: #334155;
+            --ring: #cbd5e1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background);
+            color: var(--foreground);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--background);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(8px);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 4rem;
+            padding: 1rem 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            max-width: 24rem;
+            width: 100%;
+        }
+
+        .search-box {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.5rem 0.5rem 0.5rem 2rem;
+            border: 1px solid var(--input);
+            border-radius: var(--radius);
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .admin-btn,
+        .theme-btn {
+            background: none;
+            border: none;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--foreground);
+            border-radius: var(--radius);
+        }
+
+        .admin-btn:hover,
+        .theme-btn:hover {
+            background-color: var(--accent);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 0;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .filter-select {
+            padding: 0.5rem;
+            border: 1px solid var(--input);
+            border-radius: var(--radius);
+            background-color: var(--background);
+            color: var(--foreground);
+        }
+
+        .player-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+            padding: 1.5rem 0;
+        }
+
+        .player-card {
+            background-color: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .player-card:hover {
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .player-image {
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .player-image img {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+        }
+
+        .role-badge {
+            position: absolute;
+            bottom: -0.25rem;
+            right: -0.25rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            background-color: var(--primary);
+            color: var(--primary-foreground);
+        }
+
+        .player-name {
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 0.25rem;
+        }
+
+        .player-team {
+            font-size: 0.875rem;
+            color: var(--muted-foreground);
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .player-stats {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .stat-value {
+            font-weight: 600;
+        }
+
+        .stat-label {
+            color: var(--muted-foreground);
+        }
+
+        .player-price {
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .role-batsman { border-color: #0284c7; }
+        .role-bowler { border-color: #ef4444; }
+        .role-all-rounder { border-color: #059669; }
+        .role-wicketkeeper { border-color: #7c3aed; }
+
+        .role-badge-batsman { background-color: #0284c7; }
+        .role-badge-bowler { background-color: #ef4444; }
+        .role-badge-all-rounder { background-color: #059669; }
+        .role-badge-wicketkeeper { background-color: #7c3aed; }
+
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+                height: auto;
+            }
+
+            .search-container {
+                max-width: 100%;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .filter-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .player-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Cricket Auction</h1>
+                </div>
+                <div class="search-container">
+                    <div class="search-box">
+                        <input type="search" id="searchInput" placeholder="Search players..." class="search-input">
+                    </div>
+                    <button id="themeToggle" class="theme-btn" title="Toggle Theme">
+                        🌙
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label for="roleFilter">Role:</label>
+                <select id="roleFilter" class="filter-select">
+                    <option value="all">All Roles</option>
+                    <option value="batsman">Batsman</option>
+                    <option value="bowler">Bowler</option>
+                    <option value="all-rounder">All-Rounder</option>
+                    <option value="wicketkeeper">Wicketkeeper</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="sortBy">Sort By:</label>
+                <select id="sortBy" class="filter-select">
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="price-asc">Price (Low-High)</option>
+                    <option value="price-desc">Price (High-Low)</option>
+                    <option value="runs-desc">Runs (High-Low)</option>
+                    <option value="wickets-desc">Wickets (High-Low)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="playerGrid" class="player-grid"></div>
+    </main>
+
+    <script>
+        // Sample player data
+        const samplePlayers = [
+            {
+                id: "1",
+                name: "Virat Kohli",
+                role: "Batsman",
+                team: "Royal Challengers Bangalore",
+                basePrice: 20000000,
+                matches: 215,
+                runs: 6624,
+                wickets: 0,
+                imageUrl: "img/virat.webp"
+            },
+            {
+                id: "2",
+                name: "Rohit Sharma",
+                role: "Batsman",
+                team: "Mumbai Indians",
+                basePrice: 18000000,
+                matches: 227,
+                runs: 5879,
+                wickets: 15,
+                imageUrl: "img/rohit.jpg"
+            },
+            {
+                id: "3",
+                name: "Jasprit Bumrah",
+                role: "Bowler",
+                team: "Mumbai Indians",
+                basePrice: 15000000,
+                matches: 120,
+                runs: 42,
+                wickets: 145,
+                imageUrl: "img/bumrah.avif"
+            },
+            {
+                id: "4",
+                name: "MS Dhoni",
+                role: "Wicketkeeper",
+                team: "Chennai Super Kings",
+                basePrice: 12000000,
+                matches: 250,
+                runs: 5082,
+                wickets: 0,
+                imageUrl: "img/dhoni.avif"
+            },
+            {
+                id: "5",
+                name: "Ravindra Jadeja",
+                role: "All-Rounder",
+                team: "Chennai Super Kings",
+                basePrice: 16000000,
+                matches: 226,
+                runs: 2692,
+                wickets: 152,
+                imageUrl: "img/jadeja.webp"
+            },
+            {
+                id: "6",
+                name: "KL Rahul",
+                role: "Wicketkeeper",
+                team: "Lucknow Super Giants",
+                basePrice: 17000000,
+                matches: 118,
+                runs: 4163,
+                wickets: 0,
+                imageUrl: "img/rahul.avif"
+            },
+            {
+                id: "7",
+                name: "Rashid Khan",
+                role: "Bowler",
+                team: "Gujarat Titans",
+                basePrice: 15000000,
+                matches: 109,
+                runs: 189,
+                wickets: 139,
+                imageUrl: "img/rashid.jpeg"
+            },
+            {
+                id: "8",
+                name: "Andre Russell",
+                role: "All-Rounder",
+                team: "Kolkata Knight Riders",
+                basePrice: 16000000,
+                matches: 98,
+                runs: 1897,
+                wickets: 89,
+                imageUrl: "img/russell.avif"
+            },
+            {
+                id: "9",
+                name: "David Warner",
+                role: "Batsman",
+                team: "Delhi Capitals",
+                basePrice: 14000000,
+                matches: 176,
+                runs: 6397,
+                wickets: 0,
+                imageUrl: "img/david.avif"
+            },
+            {
+                id: "10",
+                name: "Rishabh Pant",
+                role: "Wicketkeeper",
+                team: "Delhi Capitals",
+                basePrice: 16000000,
+                matches: 98,
+                runs: 2838,
+                wickets: 0,
+                imageUrl: "img/pant.webp"
+            },
+            {
+                id: "11",
+                name: "Hardik Pandya",
+                role: "All-Rounder",
+                team: "Gujarat Titans",
+                basePrice: 15000000,
+                matches: 123,
+                runs: 1963,
+                wickets: 53,
+                imageUrl: "img/hardik.webp"
+            },
+            {
+                id: "12",
+                name: "Jofra Archer",
+                role: "Bowler",
+                team: "Mumbai Indians",
+                basePrice: 12000000,
+                matches: 35,
+                runs: 89,
+                wickets: 48,
+                imageUrl: "img/jafra.jpeg"
+            },
+            {
+                id: "13",
+                name: "Shubman Gill",
+                role: "Batsman",
+                team: "Gujarat Titans",
+                basePrice: 18000000,
+                matches: 91,
+                runs: 2790,
+                wickets: 0,
+                imageUrl: "img/gill.webp"
+            }
+        ];
+
+        // State management
+        let players = [...samplePlayers];
+        let filteredPlayers = [...players];
+        let cartPlayers = [];
+
+        // DOM Elements
+        const searchInput = document.getElementById('searchInput');
+        const roleFilter = document.getElementById('roleFilter');
+        const sortBy = document.getElementById('sortBy');
+        const themeToggleBtn = document.getElementById('themeToggle');
+        const playerGrid = document.getElementById('playerGrid');
+
+        // Utility functions
+        const formatAmount = (amount) => {
+            if (amount >= 10000000) {
+                return `${(amount / 10000000).toFixed(2)} Cr`;
+            } else if (amount >= 100000) {
+                return `${(amount / 100000).toFixed(2)} L`;
+            }
+            return amount.toLocaleString();
+        };
+
+        const createPlayerCard = (player) => {
+            const isInCart = cartPlayers.some(p => p.id === player.id);
+            const roleClass = `role-${player.role.toLowerCase().replace(' ', '-')}`;
+            const roleBadgeClass = `role-badge-${player.role.toLowerCase().replace(' ', '-')}`;
+
+            const card = document.createElement('div');
+            card.className = `player-card ${roleClass} ${isInCart ? 'in-cart' : ''}`;
+            
+            card.innerHTML = `
+                <div class="player-image">
+                    <img src="${player.imageUrl}" alt="${player.name}" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgdmlld0JveD0iMCAwIDIwMCAyMDAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIyMDAiIGZpbGw9IiNFMkU4RjAiLz48cGF0aCBkPSJNMTAwIDcwQzg4Ljk1NCA3MCA4MCA3OC45NTQgODAgOTBDODAgMTAxLjA0NiA4OC45NTQgMTEwIDEwMCAxMTBDMTExLjA0NiAxMTAgMTIwIDEwMS4wNDYgMTIwIDkwQzEyMCA3OC45NTQgMTExLjA0NiA3MCAxMDAgNzBaTTEwMCAxMDBDOTQuNDc3IDEwMCA5MCA5NS41MjMgOTAgOTBDOTAgODQuNDc3IDk0LjQ3NyA4MCAxMDAgODBDMTA1LjUyMyA4MCAxMTAgODQuNDc3IDExMCA5MEMxMTAgOTUuNTIzIDEwNS41MjMgMTAwIDEwMCAxMDBaIiBmaWxsPSIjOTRBM0I4Ii8+PHBhdGggZD0iTTEwMCAxMjBDNzcuOTA5IDEyMCA2MCAxMzcuOTA5IDYwIDE2MEgxNDBDMTQwIDEzNy45MDkgMTIyLjA5MSAxMjAgMTAwIDEyMFpNMTAwIDEzMEMxMTYuNTY5IDEzMCAxMzAgMTQzLjQzMSAxMzAgMTYwSDcwQzcwIDE0My40MzEgODMuNDMxIDEzMCAxMDAgMTMwWiIgZmlsbD0iIzk0QTNCOCIvPjwvc3ZnPg=='">
+                    <span class="role-badge ${roleBadgeClass}">${player.role}</span>
+                </div>
+                <h3 class="player-name">${player.name}</h3>
+                <p class="player-team">${player.team}</p>
+                <div class="player-stats">
+                    <div class="stat-group">
+                        <span class="stat-value">${player.matches}</span>
+                        <span class="stat-label">Matches</span>
+                    </div>
+                    ${player.role !== 'Bowler' ? `
+                        <div class="stat-group">
+                            <span class="stat-value">${player.runs}</span>
+                            <span class="stat-label">Runs</span>
+                        </div>
+                    ` : ''}
+                    ${player.role !== 'Batsman' && player.role !== 'Wicketkeeper' ? `
+                        <div class="stat-group">
+                            <span class="stat-value">${player.wickets}</span>
+                            <span class="stat-label">Wickets</span>
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="player-price">${formatAmount(player.basePrice)}</div>
+            `;
+
+            card.addEventListener('click', () => handleAddToCart(player));
+            return card;
+        };
+
+        const updatePlayerGrid = () => {
+            playerGrid.innerHTML = '';
+            if (filteredPlayers.length === 0) {
+                playerGrid.innerHTML = `
+                    <div class="no-players">
+                        <h3>No players found</h3>
+                        <p>Try changing your filters or search query</p>
+                    </div>
+                `;
+                return;
+            }
+            filteredPlayers.forEach(player => {
+                playerGrid.appendChild(createPlayerCard(player));
+            });
+        };
+
+        const applyFilters = () => {
+            let result = [...players];
+            
+            // Apply role filter
+            if (roleFilter.value !== 'all') {
+                result = result.filter(player => 
+                    player.role.toLowerCase() === roleFilter.value.replace('-', ' ')
+                );
+            }
+            
+            // Apply search query
+            if (searchInput.value) {
+                const query = searchInput.value.toLowerCase();
+                result = result.filter(player =>
+                    player.name.toLowerCase().includes(query) ||
+                    player.team.toLowerCase().includes(query)
+                );
+            }
+            
+            // Apply sorting
+            switch (sortBy.value) {
+                case 'name-asc':
+                    result.sort((a, b) => a.name.localeCompare(b.name));
+                    break;
+                case 'name-desc':
+                    result.sort((a, b) => b.name.localeCompare(a.name));
+                    break;
+                case 'price-asc':
+                    result.sort((a, b) => a.basePrice - b.basePrice);
+                    break;
+                case 'price-desc':
+                    result.sort((a, b) => b.basePrice - a.basePrice);
+                    break;
+                case 'runs-desc':
+                    result.sort((a, b) => b.runs - a.runs);
+                    break;
+                case 'wickets-desc':
+                    result.sort((a, b) => b.wickets - a.wickets);
+                    break;
+            }
+            
+            filteredPlayers = result;
+            updatePlayerGrid();
+        };
+
+        const handleAddToCart = (player) => {
+            const index = cartPlayers.findIndex(p => p.id === player.id);
+            if (index !== -1) {
+                cartPlayers.splice(index, 1);
+            } else {
+                cartPlayers.push(player);
+            }
+            updatePlayerGrid();
+        };
+
+        const toggleTheme = () => {
+            document.body.classList.toggle('dark');
+            const isDark = document.body.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        };
+
+        // Event Listeners
+        searchInput.addEventListener('input', applyFilters);
+        roleFilter.addEventListener('change', applyFilters);
+        sortBy.addEventListener('change', applyFilters);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Initialize
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark');
+        }
+
+        applyFilters();
+    </script>
+</body>
+</html> 
